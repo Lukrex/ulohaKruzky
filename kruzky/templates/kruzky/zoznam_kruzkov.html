@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Školské Krúžky</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green:  #00ff88;
+            --pink:   #ff006e;
+            --blue:   #00d4ff;
+            --yellow: #ffee00;
+            --dark:   #050508;
+            --card:   #0d0d1a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ── CRT scanline sweep ── */
+        @keyframes scanline {
+            from { transform: translateY(-200px); }
+            to   { transform: translateY(100vh); }
+        }
+
+        /* ── whole-page flicker ── */
+        @keyframes flicker {
+            0%,89%,91%,95%,100% { opacity: 1; }
+            90%                  { opacity: .5; }
+            93%                  { opacity: .7; }
+        }
+
+        /* ── glitch layer 1 ── */
+        @keyframes glitch1 {
+            0%   { clip-path:inset(0 0 97% 0);  transform:translate(-5px,0); }
+            20%  { clip-path:inset(40% 0 40% 0); transform:translate( 5px,0); }
+            40%  { clip-path:inset(75% 0 8% 0);  transform:translate(-5px,0); }
+            60%  { clip-path:inset(20% 0 68% 0); transform:translate( 5px,0); }
+            80%  { clip-path:inset(88% 0 2% 0);  transform:translate(-5px,0); }
+            100% { clip-path:inset(0 0 97% 0);   transform:translate( 5px,0); }
+        }
+
+        /* ── glitch layer 2 ── */
+        @keyframes glitch2 {
+            0%   { clip-path:inset(55% 0 25% 0); transform:translate( 5px,0); color:var(--pink);   }
+            25%  { clip-path:inset(8% 0 82% 0);  transform:translate(-5px,0); color:var(--blue);   }
+            50%  { clip-path:inset(80% 0 6% 0);  transform:translate( 5px,0); color:var(--green);  }
+            75%  { clip-path:inset(30% 0 55% 0); transform:translate(-5px,0); color:var(--yellow); }
+            100% { clip-path:inset(55% 0 25% 0); transform:translate( 5px,0); color:var(--pink);   }
+        }
+
+        /* ── rainbow border ── */
+        @keyframes rainbow-border {
+            0%,100% { box-shadow:0 0 6px var(--green),0 0 24px var(--green),inset 0 0 6px rgba(0,255,136,.08); border-color:var(--green); }
+            33%      { box-shadow:0 0 6px var(--pink), 0 0 24px var(--pink), inset 0 0 6px rgba(255,0,110,.08);  border-color:var(--pink);  }
+            66%      { box-shadow:0 0 6px var(--blue), 0 0 24px var(--blue), inset 0 0 6px rgba(0,212,255,.08);  border-color:var(--blue);  }
+        }
+
+        /* ── thead rainbow stripe ── */
+        @keyframes stripe-shift {
+            from { background-position:0% 50%; }
+            to   { background-position:200% 50%; }
+        }
+
+        /* ── row slide-in ── */
+        @keyframes row-in {
+            from { opacity:0; transform:translateX(-30px); }
+            to   { opacity:1; transform:translateX(0); }
+        }
+
+        /* ── title entrance ── */
+        @keyframes title-in {
+            from { opacity:0; letter-spacing:.5em; filter:blur(20px); }
+            to   { opacity:1; letter-spacing:.05em; filter:blur(0);   }
+        }
+
+        /* ── neon text pulse ── */
+        @keyframes neon-pulse {
+            0%,100% { text-shadow:0 0 7px #fff,0 0 21px #fff,0 0 42px var(--green),0 0 82px var(--green); }
+            50%      { text-shadow:0 0 4px #fff,0 0 13px #fff,0 0 25px var(--green),0 0 50px var(--green); }
+        }
+
+        /* ── header color swing ── */
+        @keyframes head-glow {
+            0%,100% { text-shadow:0 0 12px var(--pink),0 0 40px var(--pink),0 0 80px var(--pink);   }
+            50%      { text-shadow:0 0 12px var(--blue),0 0 40px var(--blue),0 0 80px var(--blue); }
+        }
+
+        /* ── floating particles ── */
+        @keyframes float-up {
+            0%   { transform:translateY(100vh) rotate(0deg);   opacity:0; }
+            10%  { opacity:1; }
+            90%  { opacity:1; }
+            100% { transform:translateY(-10vh) rotate(720deg); opacity:0; }
+        }
+
+        html { background:var(--dark); }
+
+        body {
+            font-family:'Space Mono',monospace;
+            background:var(--dark);
+            color:#e0e0ff;
+            min-height:100vh;
+            overflow-x:hidden;
+            animation:flicker 8s infinite;
+            /* horizontal scan lines */
+            background-image:repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,255,136,.014) 2px,
+                rgba(0,255,136,.014) 4px
+            );
+        }
+
+        /* CRT sweep */
+        body::before {
+            content:'';
+            position:fixed;
+            top:0; left:0;
+            width:100%; height:200px;
+            background:linear-gradient(transparent,rgba(0,255,136,.05),transparent);
+            animation:scanline 6s linear infinite;
+            pointer-events:none;
+            z-index:9999;
+        }
+
+        /* ── particles ── */
+        .particles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+        .p { position:absolute; width:3px; height:3px; border-radius:50%; animation:float-up linear infinite; }
+        .p:nth-child(1)  { left:8%;  animation-duration:13s; animation-delay:0s;   background:var(--green);  }
+        .p:nth-child(2)  { left:22%; animation-duration:19s; animation-delay:2s;   background:var(--pink);   }
+        .p:nth-child(3)  { left:37%; animation-duration:15s; animation-delay:4s;   background:var(--blue);   }
+        .p:nth-child(4)  { left:52%; animation-duration:21s; animation-delay:1s;   background:var(--yellow); }
+        .p:nth-child(5)  { left:68%; animation-duration:17s; animation-delay:3s;   background:var(--green);  }
+        .p:nth-child(6)  { left:83%; animation-duration:12s; animation-delay:5s;   background:var(--pink);   }
+        .p:nth-child(7)  { left:14%; animation-duration:23s; animation-delay:7s;   background:var(--blue);   width:2px; height:2px; }
+        .p:nth-child(8)  { left:60%; animation-duration:14s; animation-delay:9s;   background:var(--green);  width:4px; height:4px; }
+        .p:nth-child(9)  { left:76%; animation-duration:18s; animation-delay:.5s;  background:var(--yellow); }
+        .p:nth-child(10) { left:31%; animation-duration:20s; animation-delay:6s;   background:var(--pink);   width:2px; height:2px; }
+
+        /* ── layout ── */
+        .wrapper { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:60px 24px 80px; }
+
+        /* ── header ── */
+        .header { text-align:center; margin-bottom:56px; }
+
+        .eyebrow {
+            font-size:.72rem; letter-spacing:.4em; color:var(--green);
+            text-transform:uppercase;
+            animation:neon-pulse 3s ease-in-out infinite;
+            margin-bottom:12px;
+        }
+
+        .header h1 {
+            font-family:'Bebas Neue',cursive;
+            font-size:clamp(3.5rem,10vw,8rem);
+            line-height:.9; letter-spacing:.05em; text-transform:uppercase;
+            color:#fff;
+            position:relative; display:inline-block;
+            animation:title-in 1s ease-out forwards, head-glow 4s ease-in-out 1s infinite;
+        }
+
+        .header h1::before,
+        .header h1::after {
+            content:attr(data-text);
+            position:absolute; inset:0;
+            font-family:'Bebas Neue',cursive;
+        }
+        .header h1::before { animation:glitch1 4s steps(1) infinite;     color:var(--pink);  }
+        .header h1::after  { animation:glitch2 4s steps(1) .1s infinite; }
+
+        .subtitle {
+            font-size:.75rem; color:rgba(255,255,255,.35);
+            letter-spacing:.25em; margin-top:14px;
+        }
+
+        /* ── divider ── */
+        .divider { display:flex; align-items:center; gap:16px; margin-bottom:36px; }
+        .divider::before,.divider::after {
+            content:''; flex:1; height:1px;
+            background:linear-gradient(90deg,transparent,var(--green),transparent);
+        }
+        .divider span { font-size:.62rem; color:var(--green); letter-spacing:.3em; white-space:nowrap; }
+
+        /* ── table wrap ── */
+        .table-wrap {
+            border:1px solid var(--green);
+            border-radius:3px;
+            overflow:hidden;
+            animation:rainbow-border 6s ease-in-out infinite;
+            position:relative;
+        }
+
+        /* corner accents */
+        .table-wrap::before {
+            content:''; position:absolute; top:-1px; right:-1px;
+            width:22px; height:22px; z-index:2;
+            border-top:3px solid var(--pink);
+            border-right:3px solid var(--pink);
+        }
+        .table-wrap::after {
+            content:''; position:absolute; bottom:-1px; left:-1px;
+            width:22px; height:22px; z-index:2;
+            border-bottom:3px solid var(--blue);
+            border-left:3px solid var(--blue);
+        }
+
+        table { width:100%; border-collapse:collapse; background:var(--card); }
+
+        /* ── thead ── */
+        thead tr { background:#0a0a1f; position:relative; }
+        thead tr::after {
+            content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
+            background:linear-gradient(90deg,var(--blue),var(--pink),var(--green),var(--yellow),var(--pink),var(--blue));
+            background-size:200% 100%;
+            animation:stripe-shift 4s linear infinite;
+        }
+
+        th {
+            font-family:'Bebas Neue',cursive;
+            font-size:1.05rem; letter-spacing:.2em; color:var(--blue);
+            padding:20px 24px; text-align:left; text-transform:uppercase;
+            text-shadow:0 0 10px var(--blue); white-space:nowrap;
+        }
+
+        /* ── tbody ── */
+        tbody tr {
+            border-bottom:1px solid rgba(255,255,255,.04);
+            transition:background .15s, transform .15s;
+            opacity:0;
+            animation:row-in .4s ease forwards;
+        }
+
+        tbody tr:nth-child(1) { animation-delay:.00s; }
+        tbody tr:nth-child(2) { animation-delay:.08s; }
+        tbody tr:nth-child(3) { animation-delay:.16s; }
+        tbody tr:nth-child(4) { animation-delay:.24s; }
+        tbody tr:nth-child(5) { animation-delay:.32s; }
+        tbody tr:nth-child(6) { animation-delay:.40s; }
+        tbody tr:nth-child(7) { animation-delay:.48s; }
+        tbody tr:nth-child(8) { animation-delay:.56s; }
+
+        tbody tr:nth-child(even) { background:rgba(255,255,255,.015); }
+
+        tbody tr:hover {
+            background:rgba(0,255,136,.05);
+            transform:translateX(6px);
+        }
+        tbody tr:hover td:first-child {
+            color:var(--green);
+            text-shadow:0 0 8px var(--green);
+        }
+
+        td { font-size:.82rem; color:rgba(255,255,255,.82); padding:16px 24px; vertical-align:middle; }
+
+        td:nth-child(1) { font-weight:700; color:#fff; font-size:.88rem; letter-spacing:.04em; }
+
+        td:nth-child(2) { color:var(--yellow); }
+        td:nth-child(2)::before { content:'▸ '; color:var(--pink); }
+
+        td:nth-child(3) {
+            background:rgba(0,212,255,.07);
+            border-left:1px solid rgba(0,212,255,.2);
+            border-right:1px solid rgba(0,212,255,.2);
+            color:var(--blue);
+            letter-spacing:.15em; font-size:.76rem;
+            text-shadow:0 0 6px var(--blue);
+        }
+
+        td:nth-child(4) { color:#c8b8ff; }
+
+        td:nth-child(5) { color:rgba(255,255,255,.38); font-size:.72rem; }
+        td:nth-child(5)::before { content:'@ '; color:var(--pink); }
+
+        /* ── empty state ── */
+        .empty {
+            text-align:center; padding:80px 40px;
+            background:var(--card);
+            border:1px dashed rgba(255,0,110,.4);
+            border-radius:3px;
+        }
+        .empty .ico { font-size:3.5rem; display:block; margin-bottom:20px; filter:grayscale(1) opacity(.45); }
+        .empty p { font-family:'Bebas Neue',cursive; font-size:1.8rem; letter-spacing:.2em; color:rgba(255,255,255,.28); }
+
+        /* ── footer ── */
+        .footer { text-align:center; margin-top:44px; font-size:.62rem; letter-spacing:.3em; color:rgba(255,255,255,.14); }
+        .footer span { color:var(--pink); }
+
+        /* ── responsive ── */
+        @media(max-width:680px){
+            table,thead,tbody,th,td,tr { display:block; }
+            thead tr { display:none; }
+            tbody tr { border:1px solid rgba(0,255,136,.15); border-radius:3px; margin-bottom:14px; padding:14px; }
+            td { padding:5px 0; border:none; font-size:.78rem; }
+            td::before { content:attr(data-label)': '; color:var(--green); font-size:.68rem; letter-spacing:.15em; display:block; margin-bottom:2px; }
+            td:nth-child(3){ background:none; border:none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="particles">
+    <div class="p"></div><div class="p"></div><div class="p"></div>
+    <div class="p"></div><div class="p"></div><div class="p"></div>
+    <div class="p"></div><div class="p"></div><div class="p"></div>
+    <div class="p"></div>
+</div>
+
+<div class="wrapper">
+
+    <header class="header">
+        <p class="eyebrow">// systém školských aktivít v2.0 //</p>
+        <h1 data-text="Krúžky">Krúžky</h1>
+        <p class="subtitle">ZOZNAM &nbsp;·&nbsp; ROZVRH &nbsp;·&nbsp; VEDÚCI</p>
+    </header>
+
+    <div class="divider"><span>► NAČÍTANÉ ZÁZNAMY ◄</span></div>
+
+    {% if kruzky %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Názov krúžku</th>
+                    <th>Deň</th>
+                    <th>Miestnosť</th>
+                    <th>Vedúci</th>
+                    <th>E-mail</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kruzok in kruzky %}
+                <tr>
+                    <td data-label="Krúžok">{{ kruzok.nazov }}</td>
+                    <td data-label="Deň">{{ kruzok.den }}</td>
+                    <td data-label="Miestnosť">{{ kruzok.miestnost }}</td>
+                    <td data-label="Vedúci">{{ kruzok.veduci.meno }}</td>
+                    <td data-label="E-mail">{{ kruzok.veduci.email }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty">
+        <span class="ico">🚫</span>
+        <p>Žiadne krúžky nie sú dostupné.</p>
+    </div>
+    {% endif %}
+
+    <footer class="footer">
+        SYSTÉM &nbsp;<span>♦</span>&nbsp; {{ kruzky|length }} ZÁZNAMOV &nbsp;<span>♦</span>&nbsp; AKTÍVNY
+    </footer>
+
+</div>
+</body>
+</html>
